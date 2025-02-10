@@ -1,0 +1,13 @@
+{
+  "unit_price": 2.3,
+  "alt_sekmeler": [
+    {
+      "name": "İplik Numarası",
+      "options": [
+        {"name": "1200-1299 Dtex", "price": 0.25},
+        {"name": "1300-1399 Dtex", "price": 0.20}
+      ]
+    },
+    ...
+  ]
+}
