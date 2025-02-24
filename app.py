@@ -65,6 +65,12 @@ business_data = {
             "Kat Maliyeti": {"6": 0, "9": 0, "12": 0},
         },
     },
+     "Triko Akrilik": {
+            "unit_price": 4.90,
+            "alt_sekmeler": {
+                "LP Tüylenme Engelleyici": {"Var": 0.25, "Yok": 0},
+            },
+        },
 }
 
 
