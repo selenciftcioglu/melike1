@@ -5,7 +5,7 @@ app = Flask(__name__)
 # İşletmeler ve birim fiyatları
 business_data = {
     "Polip": {
-        "unit_price": 2.00,
+        "unit_price": 2.10,
         "alt_sekmeler": {
             "İplik Numarası": {"1200-1299 Dtex ": 0.25, "1300-1399 Dtex": 0.20, "1400-1599 Dtex": 0.10, "1600-1799 Dtex": 0.05, "1800-2199 Dtex": 0.00, "2200-2600 Dtex": 0.00, "2600-4800 Dtex": 0.00},
             "Flament": {"60-200": 0, "210-280": 0.05, "280-360": 0.1, "360-420": 0.15},
@@ -19,7 +19,7 @@ business_data = {
     "Şönil": {
         "unit_price": 0,
         "alt_sekmeler": {
-            "20/1 Akrilik": {"Var": 3.50, "Yok": 0},
+            "NM": {"Var": 3.50, "Yok": 0},
             "20/1 Polyester": {"Var": 2.70, "Yok": 0},
             "20/1 Viskon": {"Var": 3.10, "Yok": 0},
             "20/1 Bambu": {"Var": 3.50, "Yok": 0},
@@ -28,21 +28,24 @@ business_data = {
     "Akrilik": {
         "unit_price": 4.00,
         "alt_sekmeler": {
-            "Elyaf Cinsi": {"2,75 DNY": 0.10, "6 DNY": 0.15},
-            "İplik Numarası": {"15": 0.05, "18": 0.10, "21": 0.15, "24": 0.20},
-            "Kat": {"6": 0.5, "9": 0.10, "12": 0.12},
-            "İplik Cinsi": {"RX": 0, "HB": 0.10, "HB NE": 0.05, "TAFT": 0.05},
+            "Elyaf Cinsi": {"2,75 DNY": 0.10, "6 DNY": 0, "1,7 DNY": 0.10},
+            "İplik Numarası": {"6": -0.20, "10": -0.15, "15": 0, "18": 0.10, "21": 0.20, "24":0.30, "27": 0.40, "30": 0.50, "32": 0.60, "34": 0.70, "36": 0.80, "38": 0.90, "40": 1, "42": 1.10, "44": 1.20, "46": 1.30, "48": 1.40, "50": 1.50 },
+            "Kat": {"3": 0, "2": 0.15, "4": 0.05},
+            "İplik Cinsi": {"RX": 0, "HB": 0.10, "HB NE": 0.15, "TAFT": 0.20},
+            "Zincir Büküm": {"Var": 0.50, "Yok": 0},
         },
     },
     "Pamuk": {
         "unit_price": 3.10,
         "alt_sekmeler": {
-            "Hammadde": {"30/1 NE PTC Yöre": 3.20, "30/1 NE PDC YÖRE": 3.25},
-            "Dokuma": {"Var": 0.05, "Yok": 0},
+            "NM": {"16/1 Penye Compak Penye Triko": -0.15, "20/1 Penye Compak Penye Triko": -0.10, "24/1 Penye Compak Penye Triko": -0.05, "28/1 Penye Compak Penye Triko": 0, "30/1 Penye Compak Penye Triko": 0, "36/1 Penye Compak Penye Triko": 0.30, "40/1 Penye Compak Penye Triko": 0.50, "50/1 Penye Compak Penye Triko": 1.50, "60/1 Penye Compak Penye Triko": 2.50},
+            "Hammadde": {"Yöre": 0, "USA": 0.15},
+            "Torsiyon": {"Dokuma": 0.05, "Triko": 0},
             "Karde": {"Var": -0.15, "Yok": 0},
             "Sertifika Türü": {"BCI": 0.10, "Organik": 0.50},
-            "Şantuk-Boya Bobini": {"Var": 0.30, "Yok": 0},
-            "Büküm": {"20/2 Katlama Büküm": 0.55, "30/2 Katlama Büküm": 0.80, "40/2 Katlama Büküm": 1.20},
+            "Şantuk": {"Var": 0.25, "Yok": 0},
+            "Boya Bobini": {"Var": 0.10, "Yok": 0},
+            "Büküm": {"20/2 Katlama Büküm": 0.55, "30/2 Katlama Büküm": 0.80, "40/2 Katlama Büküm": 1.20, "Krep": 0.10},
         },
     },
     "Openend": {
@@ -66,9 +69,10 @@ business_data = {
         },
     },
      "Triko Akrilik": {
-            "unit_price": 4.90,
+            "unit_price": 4.60,
             "alt_sekmeler": {
-                "LP Tüylenme Engelleyici": {"Var": 0.25, "Yok": 0},
+                "LP Tüylenme Engelleyici": {"Var": 0.20, "Yok": 0},
+                "İplik Türü": {"1/9.5*7.5 Nm HB Akr 2.75 Dtex": -0.50, "1/18*15 Nm HB Akr 2.75 Dtex": -0.30, "1/23*19 Nm HB Akr 2.75 Dtex": -0.20, "2/35*28 Nm HB Akr 2.75 Dtex": 0, "1/40*32 Nm HB Akr 2,75 Dtex": 0.30, "2/40*32 Nm HB Akr 2,75 Dtex": 0.50},
             },
         },
 }
