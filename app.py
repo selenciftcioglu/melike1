@@ -154,7 +154,7 @@ def index():
                     .then(response => response.json())
                     .then(data => {
                         if (data) {
-                            let html = `<p>İşletme Birim Fiyatı: <strong>${data.unit_price} USD</strong></p>`;
+                            let html = `<p>Baz Fiyat: <strong>${data.unit_price} USD</strong></p>`;
                             // Alt sekmeleri oluştur
                             data.alt_sekmeler.forEach((section, index) => {
                                 html += `
