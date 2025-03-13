@@ -1,6 +1,7 @@
-from flask import Flask, request, render_template_string, jsonify
+from flask import Flask, request, render_template_string, jsonify, redirect, url_for, session
 
 app = Flask(__name__)
+app.secret_key = 'supersecretkey' # Gizli anahtar, oturum verilerini güvenli hale getirir.
 
 # İşletmeler ve birim fiyatları
 business_data = {
@@ -77,15 +78,62 @@ business_data = {
         },
 }
 
+# Kullanıcı adı ve şifre
+users = {
+    "admin": "password123"
+}
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username in users and users[username] == password:
+            session['username'] = username
+            return redirect(url_for('index'))
+        else:
+            return "Kullanıcı adı veya şifre yanlış", 401
+
+    login_page = """
+     <html>
+    <head>
+        <title>Giriş Yap</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <div class="container mt-4">
+        <img src="{{url_for('static', filename='logo.png')}}" alt="logo" class="img-fluid mb-4" style="max-width: 2000px;">
+            <h1 class="text-primary">Giriş Yap</h1>
+            <form method="post">
+                <div class="form-group">
+                    <label for="username">Kullanıcı Adı:</label>
+                    <input type="text" class="form-control" id="username" name="username" required>
+                </div>
+                <div class="form-group mt-3">
+                    <label for="password">Şifre:</label>
+                    <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Giriş Yap</button>
+            </form>
+        </div>
+    </body>
+    </html>
+    """
+    return render_template_string(login_page)
 
 @app.route('/')
 def index():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
     # İşletme listesi için HTML sayfası
     page = """
     <html>
     <head>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <div class="container mt-4">
+     <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="img-fluid mb-4" style="max-width: 200px;">
+     
     <h1 class="text-primary">Fiyat Hesaplama Sistemi</h1>
 
     <div class="form-group mt-3">
