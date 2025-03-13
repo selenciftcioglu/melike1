@@ -1,82 +1,35 @@
+import pandas as pd
 from flask import Flask, request, render_template_string, jsonify, redirect, url_for, session
 
 app = Flask(__name__)
-app.secret_key = 'supersecretkey' # Gizli anahtar, oturum verilerini güvenli hale getirir.
+app.secret_key = 'supersecretkey'  # Gizli anahtar, oturum verilerini güvenli hale getirmek için kullanılır
+
+def load_business_data_from_excel(file_path):
+    df = pd.read_excel(file_path, sheet_name=None)
+    business_info = {}
+    for sheet_name, sheet_data in df.items():
+        unit_price_row = sheet_data[sheet_data['sekme'] == 'unit_price']
+        if unit_price_row.empty:
+            raise ValueError(f"'unit_price' satırı bulunamadı: {sheet_name}")
+        unit_price = unit_price_row['price'].values[0]
+        alt_sekmeler = {}
+        for index, row in sheet_data.iterrows():
+            if row['sekme'] == 'unit_price':
+                continue  # Skip the unit_price row
+            sekme = row['sekme']
+            option = row['option']
+            price = row['price']
+            if sekme not in alt_sekmeler:
+                alt_sekmeler[sekme] = {}
+            alt_sekmeler[sekme][option] = price
+        business_info[sheet_name] = {
+            "unit_price": unit_price,
+            "alt_sekmeler": alt_sekmeler
+        }
+    return business_info
 
 # İşletmeler ve birim fiyatları
-business_data = {
-    "Polip": {
-        "unit_price": 2.10,
-        "alt_sekmeler": {
-            "İplik Numarası": {"1200-1299 Dtex ": 0.25, "1300-1399 Dtex": 0.20, "1400-1599 Dtex": 0.10, "1600-1799 Dtex": 0.05, "1800-2199 Dtex": 0.00, "2200-2600 Dtex": 0.00, "2600-4800 Dtex": 0.00},
-            "Flament": {"60-200": 0, "210-280": 0.05, "280-360": 0.1, "360-420": 0.15},
-            "Kat": {"10": 0, "20": 0, "30": 0, "40": 0, "50": 0, "60": 0, "70": 0},
-            "İplik Cinsi": {"HEATSET": 0, "FRIZE": 0, "PUNTO": 0, "CPC": 0.05, "TRICOLOR": 0.05, "BCF": -0.2},
-            "Büküm": {"60-150": 0, "150-200": 0.05, "200-250": 0.1, "250-300": 0.15},
-            "UV Yumuşatıcı": {"%1": 0.075, "%2": 0.15},
-            "Renk": {"BORDO": 0.3, "KIRMIZI": 0.3, "KIREMIT": 0.3, "LACIVERT": 0.25, "YESIL": 0.25, "KAHVE": 0.25},
-        },
-    },
-    "Şönil": {
-        "unit_price": 0,
-        "alt_sekmeler": {
-            "NM": {"Var": 3.50, "Yok": 0},
-            "20/1 Polyester": {"Var": 2.70, "Yok": 0},
-            "20/1 Viskon": {"Var": 3.10, "Yok": 0},
-            "20/1 Bambu": {"Var": 3.50, "Yok": 0},
-        },
-    },
-    "Akrilik": {
-        "unit_price": 4.00,
-        "alt_sekmeler": {
-            "Elyaf Cinsi": {"2,75 DNY": 0.10, "6 DNY": 0, "1,7 DNY": 0.10},
-            "İplik Numarası": {"6": -0.20, "10": -0.15, "15": 0, "18": 0.10, "21": 0.20, "24":0.30, "27": 0.40, "30": 0.50, "32": 0.60, "34": 0.70, "36": 0.80, "38": 0.90, "40": 1, "42": 1.10, "44": 1.20, "46": 1.30, "48": 1.40, "50": 1.50 },
-            "Kat": {"3": 0, "2": 0.15, "4": 0.05},
-            "İplik Cinsi": {"RX": 0, "HB": 0.10, "HB NE": 0.15, "TAFT": 0.20},
-            "Zincir Büküm": {"Var": 0.50, "Yok": 0},
-        },
-    },
-    "Pamuk": {
-        "unit_price": 3.10,
-        "alt_sekmeler": {
-            "NM": {"16/1 Penye Compak Penye Triko": -0.15, "20/1 Penye Compak Penye Triko": -0.10, "24/1 Penye Compak Penye Triko": -0.05, "28/1 Penye Compak Penye Triko": 0, "30/1 Penye Compak Penye Triko": 0, "36/1 Penye Compak Penye Triko": 0.30, "40/1 Penye Compak Penye Triko": 0.50, "50/1 Penye Compak Penye Triko": 1.50, "60/1 Penye Compak Penye Triko": 2.50},
-            "Hammadde": {"Yöre": 0, "USA": 0.15},
-            "Torsiyon": {"Dokuma": 0.05, "Triko": 0},
-            "Karde": {"Var": -0.15, "Yok": 0},
-            "Sertifika Türü": {"BCI": 0.10, "Organik": 0.50},
-            "Şantuk": {"Var": 0.25, "Yok": 0},
-            "Boya Bobini": {"Var": 0.10, "Yok": 0},
-            "Büküm": {"20/2 Katlama Büküm": 0.55, "30/2 Katlama Büküm": 0.80, "40/2 Katlama Büküm": 1.20, "Krep": 0.10},
-        },
-    },
-    "Openend": {
-        "unit_price": 2.40,
-        "alt_sekmeler": {
-            "Telef": {"Var": 0, "Yok": -0.80},
-        },
-    },
-    "Ring": {
-        "unit_price": 0,
-        "alt_sekmeler": {
-            "20/1 Akrilik": {"Var": 3.50, "Yok": 0},
-            "20/1 Polyester": {"Var": 2.70, "Yok": 0},
-            "20/1 Viskon": {"Var": 3.10, "Yok": 0},
-            "20/1 Bambu": {"Var": 3.50, "Yok": 0},
-            "20/1 Tensel": {"Var": 3.40, "Yok": 0},
-            "20/1 Modal": {"Var": 4.20, "Yok": 0},
-            "Boya": {"Var": 0.05, "Yok": 0},
-            "İplik Numarası": {"1": 0, "2": 0, "3": 0},
-            "Kat Maliyeti": {"6": 0, "9": 0, "12": 0},
-        },
-    },
-     "Triko Akrilik": {
-            "unit_price": 4.60,
-            "alt_sekmeler": {
-                "LP Tüylenme Engelleyici": {"Var": 0.20, "Yok": 0},
-                "İplik Türü": {"1/9.5*7.5 Nm HB Akr 2.75 Dtex": -0.50, "1/18*15 Nm HB Akr 2.75 Dtex": -0.30, "1/23*19 Nm HB Akr 2.75 Dtex": -0.20, "2/35*28 Nm HB Akr 2.75 Dtex": 0, "1/40*32 Nm HB Akr 2,75 Dtex": 0.30, "2/40*32 Nm HB Akr 2,75 Dtex": 0.50},
-            },
-        },
-}
+business_data = load_business_data_from_excel('c:\\Users\\batuu\\OneDrive\\Masaüstü\\DOSYALAR\\melike1\\business_data.xlsx')
 
 # Kullanıcı adı ve şifre
 users = {
@@ -95,14 +48,14 @@ def login():
             return "Kullanıcı adı veya şifre yanlış", 401
 
     login_page = """
-     <html>
+    <html>
     <head>
         <title>Giriş Yap</title>
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     </head>
     <body>
         <div class="container mt-4">
-        <img src="{{url_for('static', filename='logo.png')}}" alt="logo" class="img-fluid mb-4" style="max-width: 2000px;">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="img-fluid mb-4" style="max-width: 200px;">
             <h1 class="text-primary">Giriş Yap</h1>
             <form method="post">
                 <div class="form-group">
@@ -132,8 +85,7 @@ def index():
     <head>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
     <div class="container mt-4">
-     <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="img-fluid mb-4" style="max-width: 200px;">
-     
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" class="img-fluid mb-4" style="max-width: 200px;">
     <h1 class="text-primary">Fiyat Hesaplama Sistemi</h1>
 
     <div class="form-group mt-3">
@@ -201,7 +153,7 @@ def index():
                 fetch(`/get_sections?business=${business}`)
                     .then(response => response.json())
                     .then(data => {
-                        if (data) {
+                        if (data.unit_price !== undefined) {
                             let html = `<p>Baz Fiyat: <strong>${data.unit_price} USD</strong></p>`;
                             // Alt sekmeleri oluştur
                             data.alt_sekmeler.forEach((section, index) => {
@@ -229,9 +181,9 @@ def index():
                 let total = basePrice;
 
                 const dropdowns = document.querySelectorAll('select[id^="input-"]');
-                    dropdowns.forEach(dropdown => {
-                     const selectedValue = parseFloat(dropdown.value) || 0;
-                     total += selectedValue;
+                dropdowns.forEach(dropdown => {
+                    const selectedValue = parseFloat(dropdown.value) || 0;
+                    total += selectedValue;
                 });
 
                 document.getElementById("totalPrice").innerText = total.toFixed(2) + " USD + KDV";
@@ -277,7 +229,6 @@ def get_sections():
     ]
 
     return jsonify({"unit_price": business_info["unit_price"], "alt_sekmeler": alt_sekmeler_list})
-
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", debug=True, port=5007)
