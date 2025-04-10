@@ -2,7 +2,7 @@ import pandas as pd
 from flask import Flask, request, render_template_string, jsonify, redirect, url_for, session
 
 app = Flask(__name__)
-app.secret_key = 'supersecretkey'  
+app.secret_key = 'supersecretkey'  # Gizli anahtar, oturum verilerini güvenli hale getirmek için kullanılır
 
 def load_business_data_from_excel(file_path):
     df = pd.read_excel(file_path, sheet_name=None)
